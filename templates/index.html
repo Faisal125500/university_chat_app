@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Student Chat Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: 70vh;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .messages-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 15px;
+            max-width: 80%;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        #loginForm {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-interface {
+            display: none;
+        }
+
+        .message-input-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control {
+            border-radius: 25px;
+            padding: 12px 20px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        }
+
+        .btn-primary {
+            border-radius: 25px;
+            padding: 12px 30px;
+            background-color: var(--primary-color);
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #357abd;
+            transform: translateY(-1px);
+        }
+
+        .welcome-header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background-color: var(--secondary-color);
+            border-radius: 15px;
+            margin-right: auto;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: typing 1s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .suggested-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .suggestion-chip {
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-chip:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-graduation-cap me-2"></i>
+            University Student Chat Assistant
+        </h1>
+        
+        <!-- Error and Success Messages -->
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+        
+        <!-- Login Form -->
+        <div id="loginForm">
+            <div class="text-center mb-4">
+                <i class="fas fa-user-circle fa-3x text-primary mb-3"></i>
+                <h4>Welcome Back!</h4>
+                <p class="text-muted">Please login with your Student ID</p>
+            </div>
+            <form id="studentLoginForm">
+                <div class="mb-3">
+                    <label for="studentId" class="form-label">Student ID</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                        <input type="text" class="form-control" id="studentId" required placeholder="Enter your Student ID">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+            </form>
+        </div>
+
+        <!-- Chat Interface -->
+        <div id="chatInterface" class="chat-interface">
+            <div class="welcome-header">
+                <div class="student-info">
+                    <div class="student-avatar" id="studentAvatar"></div>
+                    <div>
+                        <h5 class="mb-0">Welcome, <span id="studentName"></span>!</h5>
+                        <small class="text-muted">Student Portal</small>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+            </div>
+
+            <div class="chat-container" id="chatContainer">
+                <div class="messages-area" id="messagesArea">
+                    <div class="suggested-questions">
+                        <div class="suggestion-chip" onclick="askQuestion('What is my GPA?')">GPA</div>
+                        <div class="suggestion-chip" onclick="askQuestion('Show my class routine')">Class Routine</div>
+                        <div class="suggestion-chip" onclick="askQuestion('What is my classroom?')">Classroom</div>
+                        <div class="suggestion-chip" onclick="askQuestion('Who is my faculty advisor?')">Faculty Advisor</div>
+                    </div>
+                </div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <div class="message-input-container">
+                <form id="messageForm" class="d-flex gap-2">
+                    <input type="text" class="form-control" id="messageInput" placeholder="Type your message..." required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show message function
+        function showMessage(message, isError = false) {
+            const messageDiv = document.getElementById(isError ? 'errorMessage' : 'successMessage');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Login handling
+        document.getElementById('studentLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('studentId').value;
+            
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `student_id=${encodeURIComponent(studentId)}`
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('chatInterface').style.display = 'block';
+                    document.getElementById('studentName').textContent = data.name;
+                    document.getElementById('studentAvatar').textContent = data.name.charAt(0).toUpperCase();
+                    loadMessages();
+                    showMessage('Successfully logged in!', false);
+                } else {
+                    showMessage(data.message, true);
+                }
+            } catch (error) {
+                showMessage('An error occurred during login. Please try again.', true);
+                console.error('Login error:', error);
+            }
+        });
+
+        // Message handling
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            
+            if (!message.trim()) return;
+            
+            // Add user message to chat
+            addMessageToChat(message, true);
+            messageInput.value = '';
+            
+            // Show typing indicator
+            document.getElementById('typingIndicator').style.display = 'block';
+            
+            try {
+                // Send message to server
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `message=${encodeURIComponent(message)}`
+                });
+                
+                const data = await response.json();
+                
+                // Hide typing indicator
+                document.getElementById('typingIndicator').style.display = 'none';
+                
+                if (data.success) {
+                    addMessageToChat(data.response, false);
+                } else {
+                    showMessage(data.message, true);
+                }
+            } catch (error) {
+                // Hide typing indicator
+                document.getElementById('typingIndicator').style.display = 'none';
+                showMessage('An error occurred while sending your message. Please try again.', true);
+                console.error('Chat error:', error);
+            }
+        });
+
+        // Load messages
+        async function loadMessages() {
+            try {
+                const response = await fetch('/get_messages');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const messagesArea = document.getElementById('messagesArea');
+                    // Keep the suggested questions
+                    const suggestedQuestions = messagesArea.querySelector('.suggested-questions');
+                    messagesArea.innerHTML = '';
+                    messagesArea.appendChild(suggestedQuestions);
+                    
+                    data.messages.forEach(msg => {
+                        addMessageToChat(msg.content, !msg.is_bot);
+                    });
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                } else {
+                    showMessage(data.message, true);
+                }
+            } catch (error) {
+                showMessage('An error occurred while loading messages. Please try again.', true);
+                console.error('Load messages error:', error);
+            }
+        }
+
+        // Add message to chat
+        function addMessageToChat(content, isUser) {
+            const messagesArea = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            // Convert newlines to <br> tags and preserve whitespace
+            const formattedContent = content.replace(/\n/g, '<br>');
+            messageDiv.innerHTML = formattedContent;
+            
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Ask question function for suggestion chips
+        function askQuestion(question) {
+            document.getElementById('messageInput').value = question;
+            document.getElementById('messageForm').dispatchEvent(new Event('submit'));
+        }
+
+        // Logout function
+        function logout() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('chatInterface').style.display = 'none';
+            document.getElementById('studentId').value = '';
+            showMessage('Successfully logged out!', false);
+        }
+    </script>
+</body>
+</html> 
